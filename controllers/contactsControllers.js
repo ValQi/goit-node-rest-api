@@ -1,15 +1,15 @@
-const contactsService = require("../services/contactsServices.js");
+const contactsServices = require("../services/contactServices.js");
 const HttpError = require("../helpers/HttpError");
 const controllerWrapper = require("../helpers/controllerWrapper.js");
 
 const getAllContacts = async (req, res) => {
-  const result = await contactsService.listContacts();
+  const result = await contactsServices.listContacts();
   res.json(result);
 };
 
 const getOneContact = async (req, res) => {
   const { id } = req.params;
-  const result = await contactsService.getContactById(id);
+  const result = await contactsServices.getContactById(id);
   if (!result) {
     throw HttpError(404);
   }
@@ -18,7 +18,7 @@ const getOneContact = async (req, res) => {
 
 const deleteContact = async (req, res) => {
   const { id } = req.params;
-  const result = await contactsService.removeContact(id);
+  const result = await contactsServices.removeContact(id);
   if (!result) {
     throw HttpError(404);
   }
@@ -27,7 +27,7 @@ const deleteContact = async (req, res) => {
 
 const createContact = async (req, res) => {
   const { name, email, phone } = req.body;
-  const result = await contactsService.addContact(name, email, phone);
+  const result = await contactsServices.addContact(name, email, phone);
   res.status(201).json(result);
 };
 
@@ -35,11 +35,23 @@ const updateContact = async (req, res) => {
   const { id } = req.params;
   const updatedItems = req.body;
 
-  const result = await contactsService.updateById(id, updatedItems);
+  const result = await contactsServices.updateById(id, updatedItems);
   if (!result) {
     throw HttpError(404);
   }
   res.status(200).json(result);
+};
+
+const updateFavoriteStatus = async (req, res) => {
+  const { id } = req.params;
+  const { favorite } = req.body;
+
+  const updatedContact = await contactsServices.updateById(id, { favorite });
+  if (!updatedContact) {
+    throw HttpError(404, "Not found");
+  }
+
+  res.json(updatedContact);
 };
 
 module.exports = {
@@ -48,4 +60,5 @@ module.exports = {
   createContact: controllerWrapper(createContact),
   deleteContact: controllerWrapper(deleteContact),
   updateContact: controllerWrapper(updateContact),
+  updateFavoriteStatus: controllerWrapper(updateFavoriteStatus),
 };
