@@ -4,6 +4,9 @@ const cors = require("cors");
 const mongoose = require("mongoose"); 
 require('dotenv').config(); 
 
+const authMiddleware = require('./middleware/authMiddleware');
+
+const usersRouter = require("./routes/usersRouter.js");
 const contactsRouter = require("./routes/contactsRouter.js");
 
 const app = express();
@@ -24,6 +27,9 @@ mongoose.connect(process.env.DB_HOST, {
     process.exit(1);
   });
 
+app.use('/api', authMiddleware);
+
+app.use("/api/users", usersRouter);
 app.use("/api/contacts", contactsRouter);
 
 app.use((_, res) => {
