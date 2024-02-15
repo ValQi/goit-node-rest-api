@@ -27,7 +27,7 @@ mongoose.connect(process.env.DB_HOST, {
     process.exit(1);
   });
 
-app.use('/api', authMiddleware);
+app.use("/api", authMiddleware);
 
 app.use("/api/users", usersRouter);
 app.use("/api/contacts", contactsRouter);
