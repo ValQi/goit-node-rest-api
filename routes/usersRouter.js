@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
-const authMiddleware = require("../middleware/authMiddleware"); // Перейменувати authMiddleware на authMiddleware.js
-const UserController = require("../controllers/usersController.js"); // Перейменувати UserController на UserController.js
+const authMiddleware = require("../middleware/authMiddleware"); 
+const UserController = require("../controllers/usersController.js");
 
 router.post("/register", UserController.registerUser);
 router.post("/login", UserController.loginUser);
