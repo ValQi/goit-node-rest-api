@@ -1,8 +1,8 @@
 const express = require("express");
 const morgan = require("morgan");
 const cors = require("cors");
-const mongoose = require("mongoose"); 
-require('dotenv').config(); 
+const mongoose = require("mongoose");
+require('dotenv').config();
 
 const authMiddleware = require('./middleware/authMiddleware');
 
