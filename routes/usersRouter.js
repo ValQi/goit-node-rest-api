@@ -1,12 +1,14 @@
 const express = require("express");
-const router = express.Router();
-const authMiddleware = require("../middleware/authMiddleware"); 
-const UserController = require("../controllers/usersController.js");
+const ctrl = require("../controllers/usersController");
+const { validateBody } = require("../helpers/validateBody");
+const { registrationSchema, loginSchema } = require("../schemas/userSchemas");
+const authMiddleware = require("../middleware/authMiddleware");
 
-router.post("/register", UserController.registerUser);
-router.post("/login", UserController.loginUser);
+const usersRouter = express.Router();
 
-router.get("/current", authMiddleware, UserController.getCurrentUser);
-router.post("/logout", authMiddleware, UserController.logout);
+usersRouter.post("/register", validateBody(registrationSchema), ctrl.registerUser);
+usersRouter.post("/login", validateBody(loginSchema), ctrl.loginUser);
+usersRouter.post("/logout", authMiddleware, ctrl.logout);
+usersRouter.get("/current", authMiddleware, ctrl.getCurrentUser);
 
-module.exports = router;
+module.exports = usersRouter;

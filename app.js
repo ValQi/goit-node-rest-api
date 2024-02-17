@@ -4,8 +4,6 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 require('dotenv').config();
 
-const authMiddleware = require('./middleware/authMiddleware');
-
 const usersRouter = require("./routes/usersRouter.js");
 const contactsRouter = require("./routes/contactsRouter.js");
 
@@ -27,10 +25,10 @@ mongoose.connect(process.env.DB_HOST, {
     process.exit(1);
   });
 
-app.use("/api", authMiddleware);
-
-app.use("/api/users", usersRouter);
+// Мидлвар для захищенних контактс
 app.use("/api/contacts", contactsRouter);
+
+app.use("/users", usersRouter);
 
 app.use((_, res) => {
   res.status(404).json({ message: "Route not found" });
@@ -41,6 +39,4 @@ app.use((err, req, res, next) => {
   res.status(status).json({ message });
 });
 
-app.listen(3000, () => {
-  console.log("Server is running. Use our API on port: 3000");
-});
+export default app;

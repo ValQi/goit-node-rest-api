@@ -5,13 +5,21 @@ const Contact = require("../models/Contacts");
 const getAllContacts = async (req, res) => {
   const { _id: owner } = req.user;
   const { page = 1, limit = 10, favorite } = req.query;
-  const favFilter = { owner };
-  if (favorite) {
-    favFilter.favorite = favorite;
+
+  const filter = { owner };
+  
+  if (favorite !== undefined) {
+    filter.favorite = favorite;
   }
+
   const skip = (page - 1) * limit;
-  const result = await Contact.find(favFilter, "-createdAt -updatedAt", { skip, limit }).populate("owner", "email");
-  res.json(result);
+
+  try {
+    const result = await Contact.find(filter, "-createdAt -updatedAt", { skip, limit }).populate("owner", "email");
+    res.json(result);
+  } catch (error) {
+    throw HttpError(500, 'Internal server error');
+  }
 };
 
 const getOneContact = async (req, res) => {

@@ -7,69 +7,62 @@ const jwt = require("jsonwebtoken");
 const registerUser = async (req, res) => {
   const { email, password } = req.body;
 
-  try {
-    let user = await User.findOne({ email });
+  const user = await User.findOne({ email });
 
-    if (user) {
-      throw HttpError(409, "Email in use");
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    user = new User({ email, password: hashedPassword });
-    await user.save();
-
-    res.status(201).json({ user: { email: user.email, subscription: user.subscription } });
-  } catch (error) {
-    res.status(error.status || 500).json({ message: error.message || "Server error" });
+  if (user) {
+    throw HttpError(409, "Email in use");
   }
+
+  const hashPassword = await bcrypt.hash(password, 10);
+  const newUser = await User.create({ ...req.body, password: hashPassword });
+
+  res.status(201).json({
+    user: {
+      email: newUser.email,
+      subscription: newUser.subscription,
+    },
+  });
 };
 
 const loginUser = async (req, res) => {
   const { email, password } = req.body;
+  const user = await User.findOne({ email });
 
-  try {
-    const user = await User.findOne({ email });
-
-    if (!user) {
-      throw HttpError(401, "Email or password is wrong");
-    }
-
-    const passwordMatch = await bcrypt.compare(password, user.password);
-
-    if (!passwordMatch) {
-      throw HttpError(401, "Email or password is wrong");
-    }
-
-    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
-
-    user.token = token;
-    await user.save();
-
-    res.status(200).json({ token, user: { email: user.email, subscription: user.subscription } });
-  } catch (error) {
-    res.status(error.status || 500).json({ message: error.message || "Server error" });
+  if (!user) {
+    throw HttpError(401, "Email or password invalid");
   }
-};
 
-const getCurrentUser = (req, res) => {
-  res.status(200).json({
-    email: req.user.email,
-    subscription: req.user.subscription
-  });
+  const comparedPassword = await bcrypt.compare(password, user.password);
+
+  if (!comparedPassword) {
+    throw HttpError(401, "Email or password invalid");
+  }
+
+  const payload = {
+    id: user._id,
+  };
+
+  const token = jwt.sign(payload, process.env.SECRET_KEY, { expiresIn: "23h" });
+  await User.findByIdAndUpdate(user._id, { token });
+
+  res.json({ token });
 };
 
 const logout = async (req, res) => {
-  try {
-    await User.updateOne({ _id: req.user._id }, { token: null });
-    res.status(204).send();
-  } catch (error) {
-    res.status(error.status || 500).json({ message: error.message || "Server error" });
-  }
+  const { _id } = req.user;
+
+  await User.findByIdAndUpdate(_id, { token: "" });
+  res.status(204).json({ message: "No Content" });
 };
+
+const getCurrentUser = async (req, res) => {
+  const { email, subscription } = req.user;
+  res.json({ email, subscription });
+};
+
 module.exports = {
   registerUser: controllerWrapper(registerUser),
   loginUser: controllerWrapper(loginUser),
+  logout: controllerWrapper(logout),
   getCurrentUser: controllerWrapper(getCurrentUser),
-  logout: controllerWrapper(logout)
 };
