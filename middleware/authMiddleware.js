@@ -3,10 +3,9 @@ const User = require('../models/Users');
 const HttpError = require('../helpers/HttpError');
 
 async function authenticateToken(req, res, next) {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
-
   try {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
     if (!token) {
       throw new HttpError(401, 'Not authorized');
     }

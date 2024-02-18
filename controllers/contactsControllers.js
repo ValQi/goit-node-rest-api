@@ -2,6 +2,10 @@ const HttpError = require("../helpers/HttpError");
 const controllerWrapper = require("../helpers/controllerWrapper.js");
 const Contact = require("../models/Contacts");
 
+const HttpError = require("../helpers/HttpError");
+const controllerWrapper = require("../helpers/controllerWrapper.js");
+const Contact = require("../models/Contacts");
+
 const getAllContacts = async (req, res) => {
   const { _id: owner } = req.user;
   const { page = 1, limit = 10, favorite } = req.query;
@@ -14,13 +18,14 @@ const getAllContacts = async (req, res) => {
 
   const skip = (page - 1) * limit;
 
-  try {
-    const result = await Contact.find(filter, "-createdAt -updatedAt", { skip, limit }).populate("owner", "email");
-    res.json(result);
-  } catch (error) {
-    throw HttpError(500, 'Internal server error');
+  const result = await Contact.find(filter, "-createdAt -updatedAt", { skip, limit }).populate("owner", "email");
+
+  if (!result) {
+    throw HttpError(404);
   }
+  res.json(result);
 };
+
 
 const getOneContact = async (req, res) => {
   const { id: _id } = req.params;
