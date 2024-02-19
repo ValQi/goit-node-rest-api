@@ -6,6 +6,7 @@ require('dotenv').config();
 
 const usersRouter = require("./routes/usersRouter.js");
 const contactsRouter = require("./routes/contactsRouter.js");
+const updateAvatarRouter = require("./path/to/updateAvatar");
 
 const app = express();
 
@@ -25,10 +26,11 @@ mongoose.connect(process.env.DB_HOST, {
     process.exit(1);
   });
 
-// Мидлвар для захищенних контактс
-app.use("/api/contacts", contactsRouter);
+app.use(express.static('public'));
 
+app.use("/api/contacts", contactsRouter);
 app.use("/api/users", usersRouter);
+app.use("/users/avatars", updateAvatarRouter);
 
 app.use((_, res) => {
   res.status(404).json({ message: "Route not found" });
@@ -39,4 +41,4 @@ app.use((err, req, res, next) => {
   res.status(status).json({ message });
 });
 
-export default app;
+module.exports = app;
