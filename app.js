@@ -30,7 +30,6 @@ app.use(express.static('public'));
 
 app.use("/api/contacts", contactsRouter);
 app.use("/api/users", usersRouter);
-app.use("/users/avatars", updateAvatarRouter);
 
 app.use((_, res) => {
   res.status(404).json({ message: "Route not found" });
