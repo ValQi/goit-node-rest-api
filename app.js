@@ -6,7 +6,6 @@ require('dotenv').config();
 
 const usersRouter = require("./routes/usersRouter.js");
 const contactsRouter = require("./routes/contactsRouter.js");
-const updateAvatarRouter = require("./path/to/updateAvatar");
 
 const app = express();
 

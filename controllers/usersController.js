@@ -61,8 +61,30 @@ const getCurrentUser = async (req, res) => {
   res.json({ email, subscription });
 };
 
-const updateUserAvatar = async (req, res) => {
-  await updateAvatar(req, res);
+const updateAvatarHandler = async (req, res, next) => {
+  const avatarUpload = req.file;
+  const user = req.user;
+
+  if (!avatarUpload) {
+    throw new HttpError(400, "Avatar file is required");
+  }
+  
+  if (user.avatarURL) {
+    await fs.promises.unlink(path.join(__dirname, "..", "public", "avatars", user.avatarURL));
+  }
+
+  const avatarFileName = generateUniqueFileName();
+  const avatarPath = path.join(__dirname, "..", "tmp", avatarFileName);
+
+  await avatarUpload.mv(avatarPath);
+
+  const newAvatarURL = `avatars/${avatarFileName}`;
+  await fs.promises.rename(avatarPath, path.join(__dirname, "..", "public", newAvatarURL));
+
+  user.avatarURL = newAvatarURL;
+  await user.save();
+
+  res.json({ avatarURL: newAvatarURL });
 };
 
 module.exports = {
@@ -70,5 +92,5 @@ module.exports = {
   loginUser: controllerWrapper(loginUser),
   logout: controllerWrapper(logout),
   getCurrentUser: controllerWrapper(getCurrentUser),
-  updateUserAvatar: controllerWrapper(updateUserAvatar),
+  updateUserAvatar: controllerWrapper(updateAvatarHandler),
 };
