@@ -19,7 +19,7 @@ const registerUser = async (req, res) => {
   await sendEmail({
     to: email,
     subject: "Email Verification",
-    html: `<a target="_blank" href="${BASE_URL}/api/users/verify/${user.verificationToken}">Click tp verify your email</a>`,
+    html: `<a target="_blank" href="${BASE_URL}/api/users/verify/${user.verificationToken}">Click to verify your email</a>`,
   });
 
   res.status(201).json({
@@ -29,12 +29,35 @@ const registerUser = async (req, res) => {
     },
   });
 };
+
+
+const verifyEmail = async (req, res) => {
+  const { verificationToken } = req.params;
+
+  const user = await User.findOne({ verificationToken });
+
+  if (!user) {
+    throw new HttpError(404, "User not found");
+  }
+
+  user.verify = true;
+  user.verificationToken = null;
+  await user.save();
+
+  res.status(200).json({ message: "Email verified successfully" });
+};
+
+
 const loginUser = async (req, res) => {
   const { email, password } = req.body;
   const user = await User.findOne({ email });
 
   if (!user) {
     throw new HttpError(401, "Email or password invalid");
+  }
+
+  if (!user.verify) {
+    throw new HttpError(403, "Email is not verified");
   }
 
   const comparedPassword = await bcrypt.compare(password, user.password);
@@ -90,6 +113,7 @@ const updateAvatarHandler = async (req, res, next) => {
 
   res.json({ avatarURL: newAvatarURL });
 };
+
 const resendVerificationEmail = async (req, res, next) => {
   const { email } = req.body;
 
@@ -103,6 +127,10 @@ const resendVerificationEmail = async (req, res, next) => {
     throw new HttpError(400, "Verification has already been passed");
   }
 
+  const verificationToken = frappe.get_uuid();
+
+  await User.findByIdAndUpdate(user._id, { verificationToken });
+
   await sendEmail({
     to: user.email,
     subject: "Email Verification",
@@ -112,9 +140,9 @@ const resendVerificationEmail = async (req, res, next) => {
   res.status(200).json({ message: "Verification email sent" });
 };
 
-
 module.exports = {
   registerUser: controllerWrapper(registerUser),
+  verifyEmail: controllerWrapper(verifyEmail),
   loginUser: controllerWrapper(loginUser),
   logout: controllerWrapper(logout),
   getCurrentUser: controllerWrapper(getCurrentUser),
