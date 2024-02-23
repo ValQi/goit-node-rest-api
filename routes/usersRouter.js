@@ -13,6 +13,6 @@ usersRouter.post("/login", validateBody(loginSchema), ctrl.loginUser);
 usersRouter.post("/logout", authMiddleware, ctrl.logout);
 usersRouter.get("/current", authMiddleware, ctrl.getCurrentUser);
 usersRouter.patch("/avatars", authMiddleware, uploadMiddleware, resizeAvatarMiddleware, ctrl.updateUserAvatar);
-usersRouter.post("/verify", authMiddleware, ctrl.verifyEmail);
+usersRouter.post("/verify", ctrl.verifyEmail);
 
 module.exports = usersRouter;
